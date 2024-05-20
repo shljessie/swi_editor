@@ -1,15 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
+const HighlightedWord = ({ word, startIndex, onClick }) => {
+  return (
+    <span
+      style={{ backgroundColor: 'yellow', cursor: 'pointer' }}
+      onClick={() => onClick(word, startIndex)}
+    >
+      {word}
+    </span>
+  );
+};
+
 const Demo = () => {
   const [text, setText] = useState(`
-    Once upon a time, there was a littel cat named Whiskers. 
+    Once upon a time, there was a little cat named Whiskers. 
     Whiskers loved to play in the garden and chase butterflise. 
     One day, Whiskers saw a big, colerful butterfly and started to run after it. 
     The butterfly flew higher and higher, and Whiskers jumped and jumped but could not reech it. 
     Finally, Whiskers sat down on the grass, tired and happy, and watched the butterfly flote away into the sky.
   `);
-  const [highlightedText, setHighlightedText] = useState('');
+  const [highlightedText, setHighlightedText] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [clickedWord, setClickedWord] = useState(null);
+  const [showTextBox, setShowTextBox] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -27,7 +40,7 @@ const Demo = () => {
       .then(response => response.json())
       .then(data => {
         console.log('API response:', data); // Log the entire response for debugging
-        setHighlightedText(applyHighlights(text, data.corrections));
+        setHighlightedText(applyHighlights(text, data.corrections, handleWordClick));
         setLoading(false);
       })
       .catch(err => {
@@ -36,37 +49,48 @@ const Demo = () => {
       });
   }, [text]);
 
-  const applyHighlights = (text, corrections) => {
-    let result = text;
-    let offset = 0; // To adjust for added HTML tags
+  const applyHighlights = (text, corrections, onClick) => {
+    let result = [];
+    let lastIndex = 0;
 
-    corrections.forEach(correction => {
-      console.log('data', correction);
+    corrections.forEach((correction, i) => {
       let { originalText, startIndex, endIndex } = correction;
 
-      // Check if the originalText ends with a period and remove it
       if (originalText.endsWith('.')) {
         originalText = originalText.slice(0, -1);
         endIndex -= 1;
       }
 
-      console.log('origin', originalText, startIndex, endIndex);
-      const highlighted = `<span style="background-color: yellow;">${originalText}</span>`;
-      const before = result.slice(0, startIndex + offset);
-      const after = result.slice(endIndex + offset);
-      result = before + highlighted + after;
-      offset += highlighted.length - (endIndex - startIndex);
+      result.push(text.slice(lastIndex, startIndex));
+      result.push(
+        <HighlightedWord
+          key={i}
+          word={originalText}
+          startIndex={startIndex}
+          onClick={onClick}
+        />
+      );
+      lastIndex = endIndex;
     });
 
+    result.push(text.slice(lastIndex));
     return result;
+  };
+
+  const handleWordClick = (word, index) => {
+    setClickedWord({ word, index });
+    setShowTextBox(!showTextBox);
   };
 
   return (
     <div>
-      <h1>Original Text</h1>
-      <p>{text}</p>
       <h1>Corrected Text</h1>
-      {loading ? <p>Loading...</p> : <p dangerouslySetInnerHTML={{ __html: highlightedText }} />}
+      {loading ? <p>Loading...</p> : <p>{highlightedText}</p>}
+      {showTextBox && clickedWord && (
+        <div>
+          <p>Tapped word: {clickedWord.word}</p>
+        </div>
+      )}
     </div>
   );
 };
