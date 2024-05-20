@@ -1,3 +1,4 @@
+import Demo from './components/Demo'
 // src/App.js
 import React from 'react';
 import TextEditor from './components/TextEditor';
@@ -5,7 +6,7 @@ import TextEditor from './components/TextEditor';
 function App() {
   return (
     <div className="App">
-      <TextEditor />
+      <Demo />
     </div>
   );
 }

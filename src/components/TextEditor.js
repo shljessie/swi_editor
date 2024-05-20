@@ -4,8 +4,8 @@ import 'react-quill/dist/quill.snow.css';
 import React, { useState } from 'react';
 
 import ReactQuill from 'react-quill';
-import axios from 'axios';
 
+// set up grammar detection pi 
 const TextEditor = () => {
   const [content, setContent] = useState('');
 
@@ -14,18 +14,14 @@ const TextEditor = () => {
   };
 
   const handleSave = () => {
-    axios.post('http://localhost:5000/save', { content })
-      .then(response => {
-        alert(response.data.status);
-      })
-      .catch(error => {
-        console.error('There was an error saving the content!', error);
-      });
+    
   };
 
   return (
     <div>
       <ReactQuill value={content} onChange={handleChange} />
+        <div className="drawing-canvas">
+        </div>
       <button onClick={handleSave}>Save</button>
     </div>
   );
