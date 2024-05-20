@@ -1,0 +1,28 @@
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-5px);
+  }
+  40%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.shake {
+  display: inline-block;
+  animation: shake 1s ease-in-out 3;
+}
+
+
+.shake-click {
+  display: inline-block;
+  animation: shake 1s ease-in-out 1;
+}
+
+.highlighted-paragraph {
+  font-size: 1.2em;
+  line-height: 1.5;
+  margin: 20px 0;
+}
