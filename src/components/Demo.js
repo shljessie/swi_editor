@@ -1,5 +1,13 @@
 import './Demo.css'; // Make sure to create this CSS file
+import 'react-accessible-accordion/dist/fancy-example.css';
 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionItemButton,
+  AccordionItemHeading,
+  AccordionItemPanel,
+} from 'react-accessible-accordion';
 import React, { useEffect, useState } from 'react';
 
 import HighlightedWord from './HighlightedWord';
@@ -22,6 +30,7 @@ const Demo = () => {
   const [showTextBox, setShowTextBox] = useState(false);
   const [lesson, setLesson] = useState('');
   const [openai, setOpenai] = useState();
+  const [correctword, setCorrectWord] = useState('');
   const [sentenceImages, setSentenceImages] = useState([]);
 
   useEffect(() => {
@@ -63,7 +72,13 @@ const Demo = () => {
     let lastIndex = 0;
 
     corrections.forEach((correction, i) => {
-      let { originalText, startIndex, endIndex } = correction;
+
+
+      console.log('DDD', correctword)
+
+      let { startIndex, endIndex, originalText } = correction;
+      let suggestion = correction.suggestion;
+
 
       if (originalText.endsWith('.')) {
         originalText = originalText.slice(0, -1);
@@ -73,6 +88,7 @@ const Demo = () => {
       const isIncorrect = true;
 
       result.push(text.slice(lastIndex, startIndex));
+      
       result.push(
         <HighlightedWord
           key={i}
@@ -110,7 +126,7 @@ const Demo = () => {
       dangerouslyAllowBrowser: true 
     });
 
-    console.log('GENERATING LESSON')
+    console.log('GENERATING LESSON', correctword, word)
     const completion = await openai.chat.completions.create({
       messages: [
         {
@@ -119,11 +135,15 @@ const Demo = () => {
           Create a json object of lessons.
           Create three keys: phonology (P), the sounds in heard/spoken words; orthography (O), the letters in read/written words; and morphology (M).
           and in the values create the lesson plans for each category.
-        
+          {
+            phonology: ,
+            orthography: , 
+            morphology
+          }
           Create the lesson plan in one paragraph.
           `,
         },
-        { role: "user", content: `Create a lesson that can teach the student how to correctly spell ${word} in one paragraph` },
+        { role: "user", content: `Create a lesson that can teach the student how to correctly spell ${correctword} because the student spelled it as ${word} in one paragraph` },
       ],
       model: "gpt-3.5-turbo-0125",
       response_format: { type: "json_object" },
@@ -135,22 +155,37 @@ const Demo = () => {
   };
 
   const formatLessonPlan = (lessonPlan) => {
-    return `
-    <h2>Lesson Plan for Spelling</h2>
-    <div>
-      <h3>Phonology</h3>
-      <p>${lessonPlan.phonology.lesson_plan}</p>
-    </div>
-    <div>
-      <h3>Orthography</h3>
-      <p>${lessonPlan.orthography.lesson_plan}</p>
-    </div>
-    <div>
-      <h3>Morphology</h3>
-      <p>${lessonPlan.morphology.lesson_plan}</p>
-    </div>
-    `;
+    console.log('Lesson Plan', lessonPlan)
+    return (
+      <Accordion>
+        <AccordionItem>
+          <AccordionItemHeading>
+            <AccordionItemButton>Phonology</AccordionItemButton>
+          </AccordionItemHeading>
+          <AccordionItemPanel>
+            <p>{lessonPlan.phonology.lesson_plan}</p>
+          </AccordionItemPanel>
+        </AccordionItem>
+        <AccordionItem>
+          <AccordionItemHeading>
+            <AccordionItemButton>Orthography</AccordionItemButton>
+          </AccordionItemHeading>
+          <AccordionItemPanel>
+            <p>{lessonPlan.orthography.lesson_plan}</p>
+          </AccordionItemPanel>
+        </AccordionItem>
+        <AccordionItem>
+          <AccordionItemHeading>
+            <AccordionItemButton>Morphology</AccordionItemButton>
+          </AccordionItemHeading>
+          <AccordionItemPanel>
+            <p>{lessonPlan.morphology.lesson_plan}</p>
+          </AccordionItemPanel>
+        </AccordionItem>
+      </Accordion>
+    );
   };
+  
 
   const fetchImage = async (sentence) => {
 
@@ -204,13 +239,15 @@ const Demo = () => {
         <em>Tap the Incorrect words to see Lesson Plans</em>
         <div id="image"></div>
         <p className="highlighted-paragraph">{highlightedText}</p>
+
         {showTextBox && clickedWord && (
           <div>
             <p>Tapped word: {clickedWord.word}</p>
-            <div>{lesson}</div>
+            {lesson}
             <div>{loading ? <p>Loading...</p> : <p></p>}</div>
           </div>
         )}
+
       </div>
       <div>
         <h1>Inline Images</h1>
@@ -226,4 +263,4 @@ export default Demo;
 
 // add final example with inline explanations for text instead of doing it as a block in the end
 // format the text nicely 
-// do more research on the lesson quality
+// for the Inline Images, highlight the incorrect words. For images without incorrect words don't display images

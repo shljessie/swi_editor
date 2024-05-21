@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const HighlightedWord = ({ word, startIndex, onClick, isIncorrect }) => {
+const HighlightedWord = ({ word, startIndex, correctword, onClick, isIncorrect }) => {
   const [isClicked, setIsClicked] = useState(false);
 
   const handleClick = () => {
